@@ -37,12 +37,15 @@ if not myDlg.OK:
 result['name'] = ok_data[0]
 result['sex'] = ok_data[1]
 result['age'] = ok_data[2]
-result['type'] = ok_data[3]
+if ok_data[3] == 'A':
+    result['type'] = 'repeat'
+else:
+    result['type'] = 'random'
 
 # 读取初始数据
 data = pd.read_csv('data.csv')
 df = data.copy()
-if result['type'] == 'B':
+if result['type'] == 'random':
     df = df.sample(frac=1)
     df.index = [i for i in range(len(df))]
 item = [0] * len(p)
@@ -59,8 +62,31 @@ for i in range(11):
         trial_data['x1'].append(item[i][j][1])
         trial_data['x2'].append(item[i][j][2])
         trial_data['block'].append('block%s' % (i + 1))
-
 df = pd.DataFrame(trial_data)
+if result['type'] == 'repeat':
+    # 插入其他概率
+    # 便利满足条件的插入位置，3个其他p不出现在开头末尾且不连着，连续p值不超过5个
+    sample_ind = []
+    for a in [1, 2, 3]:
+        for b in range(a, 4):
+            for d in [3, 4, 5]:
+                c = 12-a-b-d
+                if b <= c <= d:
+                    sample_ind.append(np.array([a, b, c, d]))
+    s = []
+    for j in range(11):
+        a = random.choice(sample_ind)
+        np.random.shuffle(a)
+        for i in [1, 2, 3]:
+            s.append((np.sum(a[:i])+i-1)+15*j)
+    # 抽取要打乱的部位
+    a = df.loc[s]
+    b = a.copy()
+    # 剔除插入概率与重复概率相同的结果
+    while (b.p.values == a.p.values).any():
+        b = b.sample(frac=1)
+        b.index = a.index
+    df.loc[b.index]=b
 df.to_csv('trial_data.csv')
 # df = df1.loc[df1.block == ok_data[3]]
 
@@ -174,7 +200,7 @@ for ii in [2, 13, 5, 8, 9]:
         value = [[0 for i in range(3)] for i in range(7)]
         clk_trial.reset()
         while True:
-            if clk_trial.getTime() > 30:
+            if clk_trial.getTime() > 1000:
                 if flag == 0:
                     too_long = 1
                 text_chaoshi.text = '超时！'
@@ -321,7 +347,8 @@ for ii in range(len(df)):
         clk2.reset()
         clk_trial.reset()
         while True:
-            if clk_trial.getTime() > 30:
+            # 取消时间限制（将超时设为1000s）
+            if clk_trial.getTime() > 1000:
                 if flag == 0:
                     result['first_upper'].append(-1)
                     result['first_lower'].append(-1)
@@ -456,7 +483,7 @@ txt.draw()
 win.flip()
 core.wait(3)
 
-with open("exp_data\\%s.csv" % (result['name']), 'a') as exp_data:
+with open("exp_data\\%s_%s.csv" % (result['name'], result['type']), 'a') as exp_data:
     exp_data.write(
         'id' + ',' + 'name' + ',' + 'age' + ',' + 'sex' + ',' + 'p' + ',' + '1-p' + ',' + 'x1' + ',' + 'x2' + ',' + 'RT'
         + ',' + 'first_upper' + ',' + 'first_lower' + ',' + 'upper' + ',' + 'lower' + ',' + 'block' + ',' + 'mirror' +
@@ -470,7 +497,7 @@ with open("exp_data\\%s.csv" % (result['name']), 'a') as exp_data:
                        ',' + result['type'] + '\n'
                        )
 
-with open("exp_data\\RT%s.csv" % (result['name'] + time.strftime("%H-%M-%S")), 'a') as exp_data:
+with open("exp_data\\RT%s_%s.csv" % (result['name'] + time.strftime("%H-%M-%S"), result['type']), 'a') as exp_data:
     exp_data.write(
         'name' + ',' + 'age' + ',' + 'sex' + ',' + 'p' + ',' + 'x1' + ',' + 'x2' + ',' + 'RT' + ',' +
         'gamble' + ',' + 'y' + ',' + 'reward' + ',' + 'flag' + '\n')
