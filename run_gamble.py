@@ -86,6 +86,7 @@ if result['type'] == 'repeat':
     while (b.p.values == a.p.values).any():
         b = b.sample(frac=1)
         b.index = a.index
+        b.block = a.block
     df.loc[b.index]=b
 df.to_csv('trial_data.csv')
 # df = df1.loc[df1.block == ok_data[3]]
@@ -153,7 +154,7 @@ clk_trial = core.Clock()
 
 # 指导语
 while True:
-    for i in range(4):
+    for i in range(2):
         pic.image = 'pic/introduction_%s' % (i + 1)
         pic.draw()
         win.flip()
@@ -174,7 +175,7 @@ flag = 0
 x1 = 0
 y1 = 0
 # 练习
-for ii in [2, 13, 5, 8, 9]:
+for ii in [23, 135, 52, 83, 29]:
     inverse, mirror = np.random.randint(0, 2, 2)
     trial = df.loc[ii]
     p_v = trial['p']
