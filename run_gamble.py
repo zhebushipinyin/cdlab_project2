@@ -465,7 +465,7 @@ for ii in range(len(df)):
     # trial结束
     # 本次trial结束
     core.wait(2)
-    if ((tr+1)%15 == 0 )&tr:
+    if ((tr+1)%15 == 0 ):
         # 休息 10s强制
         txt.text = "请休息，按【空格键】继续"
         txt.draw()
