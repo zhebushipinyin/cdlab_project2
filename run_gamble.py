@@ -50,7 +50,7 @@ if result['type'] == 'random':
     df.index = [i for i in range(len(df))]
 item = [0] * len(p)
 for i in range(len(p)):
-    item[i] = data.loc[15*i:15*i+14].values
+    item[i] = df.loc[15*i:15*i+14].values
     np.random.shuffle(item[i])  # 打乱每个p下的项目
 # 打乱总体
 np.random.shuffle(item)
